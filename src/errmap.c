@@ -1,8 +1,8 @@
 #include "so_long.h"
 
-int len_no_nl(char *line)
+static int len_no_nl(char *line)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (line[i])
@@ -14,14 +14,7 @@ int len_no_nl(char *line)
 	return (i);
 }
 
-int side_is_ones(char *line, int size)
-{
-	if (line[0] == '1' && line[size - 1] == '1')
-		return (1);
-	return (0);
-}
-
-int all_ones(char *line)
+static int all_ones(char *line)
 {
 	int i;
 
@@ -37,38 +30,65 @@ int all_ones(char *line)
 	return (1);
 }
 
-int make_map(t_map *map, int fd)
+static int	check_pce(char *line, int size, int *p, int *c, int *e)
 {
-	char *line;
+	if (line[0] != '1' || line[size - 1] != '1')
+		return (1);
+	while (*line)
+	{
+		if (*line == '\n')
+			break;
+		else if (*line == 'P')
+			(*p)++;
+		else if (*line == 'E')
+			(*e)++;
+		else if (*line == 'C')
+			(*c)++;
+		else if (*line != '1' && *line != '0')
+			return (1);
+		line++;
+	}
+	return (0);
+}
+
+static int	free_line(char *line)
+{
+	free(line);
+	return (1);
+}
+
+/*	print debug stuff :
+	ft_printf("len = %d, all_ones = %d : %s", len_no_nl(line), all_ones(line), line);
+	ft_printf("len = %d, all_ones = %d : %s", len_no_nl(line), all_ones(line), line);
+	ft_printf("players : %d\n", pce[0]);
+	ft_printf("exits : %d\n", pce[2]);
+	ft_printf("collectibles : %d\n", pce[1]);
+*/
+int err_map(t_map *map, int fd)
+{
+	char	*line;
+	int		pce[3] = {0};
+	bool	last_line_ones;
 
 	line = get_next_line(fd);
 	if (!all_ones(line))
-	{
-		free(line);
-		return (0);
-	}
-	ft_printf("len = %d : %s", len_no_nl(line), line);
+		return (free_line(line));
 	map->xsize = len_no_nl(line);
-	map->ysize = 0;
+	map->ysize = 1;
 	free(line);
 	while (line)
 	{
 		line = get_next_line(fd);
 		if (!line)
 			break;
-		ft_printf("len = %d, all_ones = %d : %s", len_no_nl(line), all_ones(line), line);
 		if (len_no_nl(line) != map->xsize)
-		{
-			free(line);
-			return (1);
-		}
-		if (!side_is_ones(line, map->xsize))
-		{
-			free(line);
-			return (1);
-		}
+			return (free_line(line));
+		if (check_pce(line, map->xsize, &pce[0], &pce[1], &pce[2]))
+			return (free_line(line));
+		last_line_ones = all_ones(line);
 		free(line);
 		map->ysize++;
 	}
-	return 0;
+	map->cnum = pce[1];
+	return (pce[0] != 1 || pce[2] != 1 || pce[1] < 1 || !last_line_ones);
 }
