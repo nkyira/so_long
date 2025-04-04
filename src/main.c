@@ -27,19 +27,16 @@ int		key_win1(int key, t_data* data)
 	return (0);
 }
 
-int		mouse_win1(int button, int x, int y, void *p)
-{
-	ft_printf("Mouse, button : %d, at (%d,%d), p : %p\n", button, x, y, p);
-	return (0);
-}
-
 int main(int argc, char **argv)
 {
 	t_data	*data;
 	int		fd;
 
-	if (argc != 2)
+	if (argc != 2 || ft_strncmp(argv[1] + ft_strlen(argv[1]) - 4, ".ber", 4))
+	{
+		ft_printf("Please enter one *.ber file!\n");
 		return (1);
+	}
 	data = malloc(sizeof(t_data));
 	if (!data)
 		return (1);
@@ -60,7 +57,7 @@ int main(int argc, char **argv)
 	}
 	ft_memset(data->images, 0, sizeof(*data->images));
 	fd = open(argv[1], O_RDONLY);
-	if(err_map(data->map, fd))
+	if(fd < 0 || err_map(data->map, fd))
 	{
 		free(data->map);
 		free(data->images);
@@ -73,13 +70,12 @@ int main(int argc, char **argv)
 	
 	data->mlxp = mlx_init();
 	if (!data->mlxp)
-		exit (1);
+		return (1);
 	setup_xpms(data->images, data->mlxp);
 	data->winp = mlx_new_window(data->mlxp, data->map->xsize * 100, data->map->ysize * 100, "win1");
 
 	draw_map(data);
 
-	mlx_mouse_hook(data->winp, mouse_win1, 0);
 	mlx_key_hook(data->winp, key_win1, data);
 	mlx_loop(data->mlxp);
 }
