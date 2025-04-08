@@ -1,6 +1,6 @@
 #include "so_long.h"
 
-void	*ctop(t_xpms *images, char c)
+static void	*ctop(t_xpms *images, char c)
 {
 	if (c == 'P')
 		return (images->player); 

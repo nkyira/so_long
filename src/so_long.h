@@ -35,6 +35,7 @@ typedef struct s_map
 	int		pxy[2];
 	int		exy[2];
 	int		cnum;
+	int		moves;
 }	t_map;
 
 typedef struct s_data
@@ -47,12 +48,14 @@ typedef struct s_data
 
 int		err_map(t_map *map, int fd);
 int		make_map(t_map *map, int fd);
+int		valid_path_check(t_map *map);
 void	draw_map(t_data *data);
 
 void	move_up(t_data* data);
 void	move_down(t_data* data);
 void	move_right(t_data* data);
 void	move_left(t_data* data);
+int		check_exit(t_data* data);
 
 int		setup_xpms(t_xpms *images, void *mlxp);
 void	destroy_images(t_xpms *images, void *mlxp);
